@@ -28,79 +28,331 @@
 	<body>
 		<div class="container">
 		<h1>CS184/284A Fall 2026 Homework 3 Write-Up</h1>
-		<div style="text-align: center;">Names: </div>
+		<div style="text-align: center;">Names: Jason Wang</div>
 
 		<br>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/fa26">cs184.eecs.berkeley.edu/fa26</a>
-		Link to GitHub repository: (TODO) <a href="https://cs184.eecs.berkeley.edu/fa26">cs184.eecs.berkeley.edu/fa26</a>
+		Link to webpage: <a href="https://cal-cs184-student.github.io/hw3-jw-writeup/">https://cal-cs184-student.github.io/hw3-jw-writeup/</a>
+		<br>
+		Link to GitHub repository: <a href="https://github.com/cal-cs184-student/hw3-jw.git">https://github.com/cal-cs184-student/hw3-jw.git</a>
 		
-		<figure>
-			<img src="assets/cornell.png" alt="Cornell Boxes with Bunnies" style="width:70%"/>
-			<figcaption>You can add images with captions!</figcaption>
-		</figure>
+		
 
 		<!--
 		We've already added one heading per part, to make your write-up as navigable when grading. Please fit your write-up within these sections!
 		-->
 
-		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
+		
 
 		<h2>Part 1: Ray Generation and Scene Intersection</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
-		<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
+		What the ray generation pipeline does is allow us to map the 2D pixels from the screen to the 3D rays in a visual scene. It first takes the 2D image coordinates and maps
+		them to a 1 by 1 square space. This is then mapped to the camera's virtual sensor plane, which sits above the plane, looking down at the z axis. This image is 
+		scaled by the camera's field of view. We then draw a vector from the camera to one of the coordinate points, multiplying it 
+		by the camera-to-world rotation matrix to properly orient it. Finally, construct a ray object with the camera's position as the origin, using that vector's direction,
+		and adjusting based on the camera's clipping boundaries. This is repeated for every coordinate of the original image. 
+		<br>
+		Once a ray is made, it is tested against the geometry in the scene to find its closest hit. When the ray hits a primitive object, it is checked for whether 
+		the intersection time t falls within a ray's valid boundaries. If it is, we update the max of that boundaries, optimizing our calculations so that
+		later primitive hits are only calculated if they are closer to the camera (hits an object at a lower intersection time t). Lastly, we make an Intersection struct
+		that holds the data we used like shading data, the t value, the interpolated surface normal, and a pointer to the primitive's material (BDSF). 
+		<br>
+		<br>
+		For the triangle intersection algorithm, it uses the Moller-Trumbore algorithm, which allows us to bypass the need to calculate a triangle's plane equation. 
+		The algorithm equates the parametric ray equation with the barycentric equation of a triangle. Converting this into a system of linear equations allows it to use Cramer's rule
+		to solve for the intersection distance and the barycentric coordinates. 
+		<br>
+		After those calculations, a hit is passed through two checks. First, the t must be within the ray's valid bounds (same as the previously mentioned bounds). 
+		Second, the barycentric coordinates must say that the hit occured in the triangle (coordinates are all between 0 and 1). If the hit
+		passes those checks, the barycentric coordinates are used to interpolate the normals of the three vertices, making the normals we need for shaders. 
+		<p>Some small sample images:</p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="assets/cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="cube.png" width="400px"/>
 				</td>
 				<td style="text-align: center;">
-				  <img src="assets/cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-			  </tr>
-			  <tr>
-				<td style="text-align: center;">
-				  <img src="assets/cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-				<td style="text-align: center;">
-				  <img src="assets/cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="plane.png" width="400px"/>
 				</td>
 			  </tr>
 			</table>
 		</div>
 		
 		<h2>Part 2: Bounding Volume Hierarchy</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-		<h2>Part 3: Direct Illumination</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-		<h2>Part 4: Global Illumination</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-		<h2>Part 5: Adaptive Sampling</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-		<h2>(Optional) Part 6: Extra Credit Opportunities</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-		
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
-			</li>
-		</ul>
+		The BVH algorithm uses a recursive approach to build a tree of boundary boxes. It starts with a set of primitives, a start and end interator. The 
+		algorithm interates through this to make a singular large box, which includes all the smaller ones inside it. It also makes a box that only contains the smaller
+		boxes' centers. It then checks the number of elements inside the big box is within the maximum leaf size. If so, the recursion stops. 
+		<br>
+		However, if there are more elements than the maximum leaf size, we must split them into more boxes. This algorithm chooses to split elements using the longest length through
+		the bounding box. It finds the average center of the smaller center, and places it on that length. Then the boxes are split left and right of that average. 
+		Should a half somehow not contain any boxes, we just divide the elements in half using their index. 
+		<br>
+		Finally, after the plit is completed, a new BVH node is made for the new elements, and the recursion continues.
+		<br> 
+		Essentially, this BVH algorithm is an optimization technique, allowing us to much more quickly determine the visible parts of the scene for 
+		faster render times. 
+		<br>
+		<p>Some much more detailed sample images that used BVH acceleration:</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="maxplanck_screenshot_11-9_18-0-40.png" width="400px"/>
+				</td>
+				<td style="text-align: center;">
+				  <img src="CBlucy_screenshot_11-9_18-2-2.png" width="400px"/>
+				</td>
+			  </tr>
+			</table>
 		</div>
+		<br>
+		The performace of this optimization was tested on a moderately detailed image, compared with and without the BVH algorithm. Without the algorithm, the 
+		path tracer had to evaluate every ray against every element in the image, resulting in a slow O(N) rendering time. THe average speed was 0.0167 million rays per second. 
+		However, with BVH acceleration the renderer could prune lots of invisible elements, reducing the expected runtime to O(log N). The average speed was 6.0529 million rays per second, an almost 400x speedup. 
+		
+		<h2>Part 3: Direct Illumination</h2>
+		To determine how much color an object is given, we need to know how much light there is. However, calculating the light coming from every direction
+		for a point on an object is simply impossible. Therefore we do a trick, shooting some rays and averaging the results. 
+		<br>
+		One method is called Uniform Hemisphere Sampling. It picks random directions uniformly across the entire 180 degree hemisphere around an object's point. The number of
+		samples is determined by the number of light sources multiplied by a set parameter. Inside a loop, one of those directions is chosen and normalized into world space. 
+		A ray is made from the intersection point between this vector and the surface. If this ray hit another object, the algorithm retrieves the emissive radiance 
+		of the object. This emissive radiance value is multiplies by the surface's BSDF and the cosine of the angle of incidence, then divided by a probability density function. Finally, 
+		it sums the radiances of all the rays and averages them.  
+		<br> 
+		However, this method can run into issues, particularly if there is only one small light source. Many of the rays will return 0 light, while the few that 
+		are in line with the light source returns a huge amount of light. This can cause a lot of noise in an image, only really solved by having a ton of light sources. 
+		<br> 
+		<br>
+		Another method is called Importance Sampling. This one looks at the light emitting objects in the scene and starts from there. For each sample from a light, 
+		it retrieves the light's data, such as the incoming radiance, world-space direction to the light, distance to the light, and the light's probability density function. 
+		The algorithm first checks the incoming light direction to see if the light could hit the surface. It then makes a shadow ray from the surface to the light. The BVH
+		tree is checked to see if the shadow ray contacts the light source. After confirming, the same process as above occurs, multiplying radiance with BSDF, cosine, and averaging. 
+		<br>
+		<p>Comparison between Uniform Hemisphere and Importance Sampling:</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_hemisphere.png" width="400px"/>
+				  <figcaption>Uniform Hemisphere</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bunny_importance.png" width="400px"/>
+				  <figcaption>Importance</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<p>Notice the reduced noise on the Importance sampling image. This is because of the reason identified earlier, how Uniform Hemisphere 
+			Sampling can very easily introduce a lot of noise. 
+		</p>
+		<p>Comparison between images with increasing amounts of light sources:</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_l1.png" width="400px"/>
+				  <figcaption>One light source</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bunny_l4.png" width="400px"/>
+				  <figcaption>Four light sources</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_l16.png" width="400px"/>
+				  <figcaption>Sixteen light sources</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bunny_l64.png" width="400px"/>
+				  <figcaption>Sixty four light sources</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<p>Notice the reduced noise the more light sources there are</p>
+		<h2>Part 4: Global Illumination</h2>
+		Global illumination is achieved through simulating light not just hitting one surface, but bouncing off and hitting others. First, our algorithm starts by 
+		doing the steps for one light bounce, one ray. Before casting another ray for the next bounce, the algorithm checks if it should terminate. Our
+		computing power is finite, and we obviously can't simulate infinite light bounces. Therefore we use a combination of checking if the ray has reached its final allowed depth
+		or with a random selection, choosing a 70% chance of continuing. This saves us time on not computing rays that have a much more negligible effect on lighting. 
+		<br>
+		If the ray survives these checks, the algorithm asks the surface material for a new random direction to bounce toward, using the material's reflectance and 
+		probability density functions. This new ray has its depth decremented, and the entire process of intersection calculations, light averaging, and new rays repeats. 
+		<br> 
+		One note here is that depending on the object scenery and built in flags, the light summation that the ray creates can sometimes be added to other ray iterations (a direct lighting hit), 
+		or it could be its own standalone light source. 
+		<p>A normal render with global illumination:</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_global.png" width="400px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<p>Images with Direct and Indirect illumination only:</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_direct_only.png" width="400px"/>
+				  <figcaption>Direct</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bunny_indirect_only.png" width="400px"/>
+				  <figcaption>Indirect</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<p>Showing the individual stages of light bounces:</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_m0.png" width="400px"/>
+				  <figcaption>Zero bounces</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bunny_m1.png" width="400px"/>
+				  <figcaption>One bounce</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_m2.png" width="400px"/>
+				  <figcaption>Two bounces</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bunny_m3.png" width="400px"/>
+				  <figcaption>Three bounces</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_m4.png" width="400px"/>
+				  <figcaption>Four bounces</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bunny_m5.png" width="400px"/>
+				  <figcaption>Five bounces</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<p>Showing the accumulating stages of light bounces:</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_accum_0.png" width="400px"/>
+				  <figcaption>Zero bounces</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bunny_accum_1.png" width="400px"/>
+				  <figcaption>One bounce</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_accum_2.png" width="400px"/>
+				  <figcaption>Two bounces</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bunny_accum_3.png" width="400px"/>
+				  <figcaption>Three bounces</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_accum_4.png" width="400px"/>
+				  <figcaption>Four bounces</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bunny_accum_100.png" width="400px"/>
+				  <figcaption>Five+ bounces</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<p>Notice how additional bounces allows for colors to bleed and smooth onto surfaces that typical rasterization wouldn't be able to capture. Especially in the second and third bounces, where we can start to see the colored walls shine onto other walls. </p>
+		<p>Showing different sample-per-pixel rates:</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="sweep_1.png" width="400px"/>
+				  <figcaption>1 sample-per-pixel</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="sweep_2.png" width="400px"/>
+				  <figcaption>2 sample-per-pixel</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="sweep_4.png" width="400px"/>
+				  <figcaption>4 sample-per-pixel</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="sweep_8.png" width="400px"/>
+				  <figcaption>8 sample-per-pixel</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="sweep_16.png" width="400px"/>
+				  <figcaption>16 sample-per-pixel</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="sweep_64.png" width="400px"/>
+				  <figcaption>64 sample-per-pixel</figcaption>
+				</td>
+			  </tr>
+			   <tr>
+				<td style="text-align: center;">
+				  <img src="sweep_1024.png" width="400px"/>
+				  <figcaption>1024 sample-per-pixel</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<h2>Part 5: Adaptive Sampling</h2>
+		In the standard pixel sampling, every pixel is evaluated with a fixed number of samples. This is inefficent because certain parts of an image
+		are already rather uniform, meaning that their sampling isn't as required as other areas of the image. Adaptive sampling addresses this by 
+		statistically monitoring the convergence of each pixel. By calculating the mean and standard deviation of the incoming light samples, we cam 
+		make a confidence interval telling the renderer whether the sampled color is close enough to its true color. 
+		<br>
+		For the actual code changes, it requires tracking variables for the sum and the sum of the squared illuminances of all rays for a pixel. 
+		For every sample ray, we extract the illuminance scalar. We calculate the mean and standard deviation in set batches and uses those
+		to create a confidence interval. We then check if the interval is within our set tolerance multiplied by the mean. If so, the pixel is considered
+		converged, and our adaptive sampling stops. 
+		<p>Images along with their sampling rate images. Red indicates a high number of samples, while blue indicates a low number of samples. </p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_adaptive.png" width="400px"/>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bunny_adaptive_rate.png" width="400px"/>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="spheres_adaptive.png" width="400px"/>
+				</td>
+				<td style="text-align: center;">
+				  <img src="spheres_adaptive_rate.png" width="400px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		
 	</body>
 </html>
